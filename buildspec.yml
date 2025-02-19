@@ -1,17 +1,35 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_REGION: "eu-north-1"  # Change to your AWS region
+    IMAGE_REPO_NAME: "aws-ecs-docker"  # Change to your ECR repository name
+    IMAGE_TAG: "latest"
+
 phases:
   install:
     commands:
       - echo Installing NGINX
-      - sudo apt-get update
-      - sudo apt-get install nginx -y
+      - sudo yum update -y  # Changed from apt-get to yum for Amazon Linux
+      - sudo yum install -y nginx docker
+
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin 021891571659.dkr.ecr.$AWS_REGION.amazonaws.com
+
   build:
     commands:
-      - echo Build started on `data`
-      - cp index.html /var/www/html/ 
+      - echo Build started on `date`
+      - cp index.html /var/www/html/
+      - echo Building the Docker image...
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG 021891571659.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+
   post_build:
     commands:
+      - echo Pushing Docker image to Amazon ECR...
+      - docker push 021891571659.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
       - echo Configuring NGINX
 
 artifacts:
