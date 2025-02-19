@@ -10,8 +10,8 @@ phases:
   install:
     commands:
       - echo Installing NGINX
-      - sudo yum update -y  # Changed from apt-get to yum for Amazon Linux
-      - sudo yum install -y nginx docker
+      - sudo apt-get update -y  # Changed from apt-get to yum for Amazon Linux
+      - sudo apt-get install -y nginx docker
 
   pre_build:
     commands:
